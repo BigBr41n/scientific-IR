@@ -1,0 +1,11 @@
+
+How does machine learning work in security?
+
+The cyber threat landscape forces organizations to constantly track and correlate millions of external and internal data points across their infrastructure and users. It simply is not feasible to manage this volume of information with only a team of people.
+
+This is where machine learning shines, because it can recognize patterns and predict threats in massive data sets, all at machine speed. By automating the analysis, cyber teams can rapidly detect threats and isolate situations that need deeper human analysis.
+How does it work?
+
+The details of machine learning can seem intimidating to non-data scientists, so let's look at some key terms.
+
+Supervised learning calls on sets of training data, called “ground truth,” which are correct question-and-answer pairs. This training helps classifiers, the workhorses of machine learning analysis, to accurately categorize observations. It also helps algorithms, used to organize and orient classifiers, successfully analyze new data in the real world. An everyday example is recognizing faces in online photos: Classifiers analyze the data patterns they are trained on--not the actual noses or eyes--in order to correctly tag a unique face amongst many millions of online photos.
