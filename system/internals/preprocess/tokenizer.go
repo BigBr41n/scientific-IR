@@ -12,18 +12,18 @@ import (
 
 // enriched posting node
 type PositionNode struct {
-    position       int16             // position of the word in the Document 
-    next         * PositionNode    // points to the next position node 
-    jump         * PositionNode     // to reduce the comparison 
+    Position       int16             // position of the word in the Document 
+    Next         * PositionNode    // points to the next position node 
+    Jump         * PositionNode     // to reduce the comparison 
 }
 
 // Posting node for each term (linked list)
 type PostingNode struct {
-    docId          string               // string! i'll use the doc name as an ID currently 
-    positions    * PositionNode         // point to all word positions in the document e.g : "term" : ["name of the doc", [1]->[2]->[3]]]->["name of doc2..."]... 
-    positionsTail * PositionNode        // tail of the list of positions
-    jump         * PostingNode          // to reduce the comparison    
-    next         * PostingNode          // points to the next posting node
+    DocID          string               // string! i'll use the doc name as an ID currently 
+    Positions    * PositionNode         // point to all word positions in the document e.g : "term" : ["name of the doc", [1]->[2]->[3]]]->["name of doc2..."]... 
+    PositionsTail * PositionNode        // tail of the list of positions
+    Jump         * PostingNode          // to reduce the comparison    
+    Next         * PostingNode          // points to the next posting node
 }   
 
 
@@ -80,22 +80,22 @@ func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- Inverted
 
             // position node of the current word
             newPosNode := &PositionNode{
-                position: int16(wordCount),
-                next: nil,
-                jump: nil,
+                Position: int16(wordCount),
+                Next: nil,
+                Jump: nil,
             }
 
             if currentPosting , exists := localIndex[word]; !exists {
                 localIndex[word] = &PostingNode{
-                    docId: entry.Name(),
-                    positions: newPosNode,
-                    positionsTail: newPosNode,
-                    next: nil,
-                    jump: nil,
+                    DocID: entry.Name(),
+                    Positions: newPosNode,
+                    PositionsTail: newPosNode,
+                    Next: nil,
+                    Jump: nil,
                 }
             } else {
-                currentPosting.positionsTail.next = newPosNode; 
-                currentPosting.positionsTail = newPosNode;
+                currentPosting.PositionsTail.Next = newPosNode; 
+                currentPosting.PositionsTail = newPosNode;
             }
         }
 
@@ -105,7 +105,7 @@ func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- Inverted
             return
         }
     }
-    
+
     // Send the local index to the main goroutine
     indexChan <- localIndex
 }
@@ -155,10 +155,10 @@ func (dp * Tokenizer) ProcessFiles() (InvertedIndex , error) {
 			} else {
 				// Merge the posting lists
 				current := index[term]
-				for current.next != nil {
-					current = current.next
+				for current.Next != nil {
+					current = current.Next
 				}
-				current.next = postingList
+				current.Next = postingList
 			}
 		}
 	}
