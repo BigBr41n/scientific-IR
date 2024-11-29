@@ -1,10 +1,12 @@
 package preprocess
 
 import (
+	"bufio"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -49,11 +51,88 @@ func NewTokenizer(docsPath string) TokenizerI {
 
 
 // tokenize and return the local inverted index for each document
-func tokenize(file fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- InvertedIndex, path string ){}
+func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- InvertedIndex, path string ){
+    defer wg.Done()
+
+    // local inverted index
+    localIndex :=  make(InvertedIndex)
+
+    // Open the file
+    filePath := filepath.Join(path, entry.Name())
+    file, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
+    if err != nil {
+        log.Print("Error opening file",entry.Name())
+    }
+    defer file.Close()
+
+    // Read file line by line
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        // Tokenize the line 
+        words := strings.Fields(scanner.Text())
+        for _, word := range words {
+            word = strings.ToLower(strings.Trim(word, ".,!?\"'"))
+            if _ , exists := localIndex[word]; !exists {
+                headOfPositions := extractPositions(word, file)
+                localIndex[word] = &PostingNode{
+                    docId: entry.Name(),
+                    positions: headOfPositions,
+                    next: nil,
+                    jump: nil,
+                }
+            }
+        }
+
+        // Check if there was a problem reading the file
+        if err := scanner.Err(); err!= nil {
+            log.Print("Error reading file", entry.Name())
+        }
+
+    
+    }
+    // Send the local index to the main goroutine
+    indexChan <- localIndex
+}
 
 
 // extract the position for each word in the document
-//TODO : func extractPositions(wordsSlice string , file os.File) (*[]int) {}
+func extractPositions(word string, file *os.File) *PositionNode {
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords) 
+
+	var head *PositionNode
+	var tail *PositionNode
+
+	wordCount := 0 
+	for scanner.Scan() {
+		wordCount++ 
+		currentWord := scanner.Text()
+
+		// check if the current word matches the target word
+		if currentWord == word {
+			// Add position to linked list
+			newNode := &PositionNode{
+                position: int16(wordCount),
+                next: nil,
+                jump: nil,
+            }
+			if head == nil {
+				head = newNode
+				tail = newNode
+			} else {
+				tail.next = newNode
+				tail = newNode
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Printf("Error reading file: %v\n", err)
+		return nil
+	}
+
+	return head
+}
 
 
 // open each file in the dir and pass it to Tokenize  function 
