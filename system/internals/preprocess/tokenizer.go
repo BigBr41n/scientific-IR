@@ -20,9 +20,10 @@ type PositionNode struct {
 // Posting node for each term (linked list)
 type PostingNode struct {
     docId          string               // string! i'll use the doc name as an ID currently 
-    positions    * PositionNode     // point to all word positions in the document e.g : "term" : ["name of the doc", [1]->[2]->[3]]]->["name of doc2..."]... 
-    jump         * PostingNode     // to reduce the comparison    
-    next         * PostingNode     // points to the next posting node
+    positions    * PositionNode         // point to all word positions in the document e.g : "term" : ["name of the doc", [1]->[2]->[3]]]->["name of doc2..."]... 
+    positionsTail * PositionNode        // tail of the list of positions
+    jump         * PostingNode          // to reduce the comparison    
+    next         * PostingNode          // points to the next posting node
 }   
 
 
@@ -62,76 +63,51 @@ func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- Inverted
     file, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
     if err != nil {
         log.Print("Error opening file",entry.Name())
+        return
     }
     defer file.Close()
 
+
     // Read file line by line
+    wordCount := 0
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
         // Tokenize the line 
         words := strings.Fields(scanner.Text())
         for _, word := range words {
-            word = strings.ToLower(strings.Trim(word, ".,!?\"'"))
-            if _ , exists := localIndex[word]; !exists {
-                headOfPositions := extractPositions(word, file)
-                localIndex[word] = &PostingNode{
-                    docId: entry.Name(),
-                    positions: headOfPositions,
-                    next: nil,
-                    jump: nil,
-                }
-            }
-        }
+            wordCount++
+            word = strings.ToLower(strings.TrimSpace(strings.Trim(word, ".,!?\"'")))
 
-        // Check if there was a problem reading the file
-        if err := scanner.Err(); err!= nil {
-            log.Print("Error reading file", entry.Name())
-        }
-
-    
-    }
-    // Send the local index to the main goroutine
-    indexChan <- localIndex
-}
-
-
-// extract the position for each word in the document
-func extractPositions(word string, file *os.File) *PositionNode {
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) 
-
-	var head *PositionNode
-	var tail *PositionNode
-
-	wordCount := 0 
-	for scanner.Scan() {
-		wordCount++ 
-		currentWord := scanner.Text()
-
-		// check if the current word matches the target word
-		if currentWord == word {
-			// Add position to linked list
-			newNode := &PositionNode{
+            // position node of the current word
+            newPosNode := &PositionNode{
                 position: int16(wordCount),
                 next: nil,
                 jump: nil,
             }
-			if head == nil {
-				head = newNode
-				tail = newNode
-			} else {
-				tail.next = newNode
-				tail = newNode
-			}
-		}
-	}
 
-	if err := scanner.Err(); err != nil {
-		log.Printf("Error reading file: %v\n", err)
-		return nil
-	}
+            if currentPosting , exists := localIndex[word]; !exists {
+                localIndex[word] = &PostingNode{
+                    docId: entry.Name(),
+                    positions: newPosNode,
+                    positionsTail: newPosNode,
+                    next: nil,
+                    jump: nil,
+                }
+            } else {
+                currentPosting.positionsTail.next = newPosNode; 
+                currentPosting.positionsTail = newPosNode;
+            }
+        }
 
-	return head
+        // Check if there was a problem reading the file
+        if err := scanner.Err(); err != nil {
+            log.Printf("Error reading file: %s", entry.Name()) 
+            return
+        }
+    }
+    
+    // Send the local index to the main goroutine
+    indexChan <- localIndex
 }
 
 
