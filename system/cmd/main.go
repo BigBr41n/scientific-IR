@@ -50,4 +50,11 @@ func main() {
 	invertedIndex , _ := tokenizer.ProcessFiles()
 
 	printInvertedIndex(invertedIndex)
+
+
+
+    // create term document matrix 
+    tdm := preprocess.BuildTDM(invertedIndex)
+    log.Println("Term Document Matrix:")
+    tdm.PrintTDM()
 }
