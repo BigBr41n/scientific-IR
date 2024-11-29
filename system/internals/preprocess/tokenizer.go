@@ -74,9 +74,13 @@ func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- Inverted
     for scanner.Scan() {
         // Tokenize the line 
         words := strings.Fields(scanner.Text())
+
         for _, word := range words {
             wordCount++
             word = strings.ToLower(strings.TrimSpace(strings.Trim(word, ".,!?\"'")))
+
+            // stem each word 
+            word := StemWords(word)
 
             // position node of the current word
             newPosNode := &PositionNode{
