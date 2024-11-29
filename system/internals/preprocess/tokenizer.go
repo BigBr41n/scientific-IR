@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/BigBr41n/scientific-IR/internals/utils"
 )
 
 // enriched posting node
@@ -68,6 +70,13 @@ func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- Inverted
     defer file.Close()
 
 
+    // Load stop words from the file
+	stopWords, err := utils.LoadStopWords()
+	if err != nil {
+		log.Printf("Error loading stop words, the TDM will contain all words")
+	}
+
+
     // Read file line by line
     wordCount := 0
     scanner := bufio.NewScanner(file)
@@ -78,6 +87,11 @@ func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- Inverted
         for _, word := range words {
             wordCount++
             word = strings.ToLower(strings.TrimSpace(strings.Trim(word, ".,!?\"'")))
+
+            // remove stop words
+		    if _, isStopWord := stopWords[word]; isStopWord {
+			    continue
+		    }
 
             // stem each word 
             word := StemWords(word)
