@@ -1,9 +1,7 @@
 package preprocess
 
 import (
-	"bufio"
 	"log"
-	"os"
 )
 
 // TDM with TF-IDF weights
@@ -13,32 +11,6 @@ type TDM struct {
 	Documents   []string                      // List of all documents
 	DocWordCount map[string]int               // Total word count for each document
 }
-
-
-// LoadStopWords reads a .txt file and returns a map of stop words
-func LoadStopWords() (map[string]struct{}, error) {
-	stopWords := make(map[string]struct{})
-
-	file, err := os.Open("./data/stop-words.txt")
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		word := scanner.Text()
-		stopWords[word] = struct{}{}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return stopWords, nil
-}
-
-
 
 // using preprocessed inverted index is much faster than
 // reprocess files and extract the number of occurrence for each word
@@ -51,21 +23,9 @@ func BuildTDM(index InvertedIndex) *TDM {
 		DocWordCount: make(map[string]int),
 	}
 
-
-	// Load stop words from the file
-	stopWords, err := LoadStopWords()
-	if err != nil {
-		log.Printf("Error loading stop words, the TDM will contain all words")
-	}
-
 	// Collect all terms and documents
 	docSet := make(map[string]struct{}) 
 	for term, postingList := range index {
-
-		// skip stop words
-		if _, isStopWord := stopWords[term]; isStopWord {
-			continue
-		}
 
 		tdm.Terms = append(tdm.Terms, term)
 
