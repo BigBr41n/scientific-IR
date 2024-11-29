@@ -27,3 +27,21 @@ func CalculateTFIDF(tdm * preprocess.TDM) {
 		}
 	}
 }
+
+
+func CalculateQueryIDF(word string, tdm *preprocess.TDM) float64 {
+	totalDocs := len(tdm.Documents)
+
+	// check if the word exists in the matrix
+	docFreqMap, exists := tdm.Matrix[word]
+	if !exists || len(docFreqMap) == 0 {
+		return 0.0
+	}
+
+
+	docCountWithTerm := len(docFreqMap)
+
+	// calculate IDF using the formula: log(totalDocs / (docCountWithTerm))
+	idf := math.Log(float64(totalDocs) / float64(docCountWithTerm))
+	return idf
+}
