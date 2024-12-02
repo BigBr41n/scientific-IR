@@ -75,5 +75,17 @@ func main() {
 
     result, _ := models.ClassicBoolean(query)
 
-    fmt.Printf("the result %v\n", result)
+    fmt.Printf("the result with intersection : %v\n", result)
+
+
+
+	fmt.Print("Enter a query: ")
+	// Scan the next line.
+	if scanner.Scan() {
+		query = scanner.Text()
+	}
+
+	result , _ = models.VSM(query)
+
+	fmt.Printf("the result with VSM : %v\n", result)
 }
