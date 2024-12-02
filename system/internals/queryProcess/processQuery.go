@@ -4,9 +4,18 @@ import (
 	"strings"
 
 	"github.com/BigBr41n/scientific-IR/internals/preprocess"
+	"github.com/BigBr41n/scientific-IR/internals/types"
 	"github.com/BigBr41n/scientific-IR/internals/utils"
 	"github.com/BigBr41n/scientific-IR/internals/weighting"
 )
+
+
+
+type Weighting struct {
+	Tf 		int
+	Idf 	float64
+	TFIDF   float64
+}
 
 // exact matching
 func Classic(query string) ([]string , error){
@@ -35,8 +44,8 @@ func Classic(query string) ([]string , error){
 
 
 
-func QueryWeight(query string, TDM * preprocess.TDM)(map[string]float64 , error){
-	qIDF := make(map[string]float64)
+func QueryWeight(query string, TDM * types.TDM)([]float64 , error){
+	qIDF := make(map[string]Weighting)
 	// Load stop words
 	stopWords, err := utils.LoadStopWords()
     if err!= nil {
@@ -53,23 +62,61 @@ func QueryWeight(query string, TDM * preprocess.TDM)(map[string]float64 , error)
 			continue
 		}
 		if _ , exists := qIDF[word]; exists {
-			qIDF[word] = qIDF[word] + 1
+			qIDF[word] = Weighting{
+				Tf: qIDF[word].Tf + 1,
+                Idf: qIDF[word].Idf,
+                TFIDF: 0.0,
+			}
 			continue
 		}
+
 		// stem 
 		word = preprocess.StemWords(word)
-		qIDF[word] = 1
-	}
 
-	for word , value := range qIDF {
+
 		IDF := weighting.CalculateQueryIDF(word, TDM)
 		if IDF == 0.0 {
-            continue
+			// don't store the term because it don't exist in the unique terms 
+			continue
         }
-		qIDF[word] = IDF * value
+
+		qIDF[word] = Weighting{
+			Tf: 1,
+			Idf: IDF,
+			TFIDF: 0.0,
+		}
 	}
 
-	return qIDF, nil
+
+	queryLenght := len(qIDF)
+
+	for word := range qIDF {
+		qIDF[word] = Weighting{
+			Tf: qIDF[word].Tf,
+            Idf: qIDF[word].Idf,
+			TFIDF: qIDF[word].Idf * (float64(qIDF[word].Tf) / float64(queryLenght)),
+		}
+	}
+
+	queryResult := make([]float64, 0)
+	isMatched := false
+
+	for key := range TDM.Matrix {
+		// matched or not
+		isMatched = false
+		for word , data := range qIDF {
+			if word == key {
+				queryResult = append(queryResult , data.TFIDF)
+				isMatched = true
+				break 
+			}
+		}
+		if !isMatched {
+			queryResult = append(queryResult, 0.0)
+		}
+	}
+
+	return queryResult, nil
 }
 
 
