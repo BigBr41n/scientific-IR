@@ -3,7 +3,7 @@ package weighting
 import (
 	"math"
 
-	"github.com/BigBr41n/scientific-IR/internals/preprocess"
+	"github.com/BigBr41n/scientific-IR/internals/types"
 )
 
 // TF= Term Frequency in Document / Total Terms in Document
@@ -11,7 +11,7 @@ import (
 
 
 
-func CalculateTFIDF(tdm * preprocess.TDM) {
+func CalculateTFIDF(tdm * types.TDM) {
 	totalDocs := len(tdm.Documents)
 
 	// Calculate TF-IDF for each term-document pair
@@ -29,7 +29,7 @@ func CalculateTFIDF(tdm * preprocess.TDM) {
 }
 
 
-func CalculateQueryIDF(word string, tdm *preprocess.TDM) float64 {
+func CalculateQueryIDF(word string, tdm *types.TDM) float64 {
 	totalDocs := len(tdm.Documents)
 
 	// check if the word exists in the matrix
