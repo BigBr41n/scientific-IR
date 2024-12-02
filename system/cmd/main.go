@@ -1,38 +1,40 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/BigBr41n/scientific-IR/internals/models"
 	"github.com/BigBr41n/scientific-IR/internals/preprocess"
+	"github.com/BigBr41n/scientific-IR/internals/utils"
 )
 
-
-
-func printInvertedIndex(index preprocess.InvertedIndex) {
-    for term, postingList := range index {
-        log.Printf("Term: %s", term)
-
-        currentPosting := postingList
-        for currentPosting != nil {
-            log.Printf("  Document: %s", currentPosting.DocID)
-
-            // Traverse the positions list
-            positions := []int16{}
-            currentPosition := currentPosting.Positions
-            for currentPosition != nil {
-                positions = append(positions, currentPosition.Position)
-                currentPosition = currentPosition.Next
-            }
-
-            log.Printf("    Positions: %v", positions)
-
-            // Move to the next posting in the list
-            currentPosting = currentPosting.Next
-        }
-    }
-}
+//func printInvertedIndex(index preprocess.InvertedIndex) {
+//    for term, postingList := range index {
+//        log.Printf("Term: %s", term)
+//
+//        currentPosting := postingList
+//        for currentPosting != nil {
+//            log.Printf("  Document: %s", currentPosting.DocID)
+//
+//            // Traverse the positions list
+//            positions := []int16{}
+//            currentPosition := currentPosting.Positions
+//            for currentPosition != nil {
+//                positions = append(positions, currentPosition.Position)
+//                currentPosition = currentPosition.Next
+//            }
+//
+//            log.Printf("    Positions: %v", positions)
+//
+//            // Move to the next posting in the list
+//            currentPosting = currentPosting.Next
+//        }
+//    }
+//}
 
 
 
@@ -49,12 +51,29 @@ func main() {
 
 	invertedIndex , _ := tokenizer.ProcessFiles()
 
-	printInvertedIndex(invertedIndex)
+	//printInvertedIndex(invertedIndex)
 
 
 
     // create term document matrix 
-    tdm := preprocess.BuildTDM(invertedIndex)
-    log.Println("Term Document Matrix:")
-    tdm.PrintTDM()
+    TDM:= preprocess.BuildTDM(invertedIndex)
+    //log.Println("Term Document Matrix:")
+    //preprocess.PrintTDM(TDM)
+
+    stopWords, _ := utils.LoadStopWords();
+
+    query := ""
+    fmt.Print("Enter a query: ")
+    scanner := bufio.NewScanner(os.Stdin)
+
+	// Scan the next line.
+	if scanner.Scan() {
+		query = scanner.Text()
+	}
+
+    models := models.NewInfoRetrievalModel(TDM , &stopWords, &invertedIndex)
+
+    result, _ := models.ClassicBoolean(query)
+
+    fmt.Printf("the result %v\n", result)
 }
