@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -43,14 +42,6 @@ type Tokenizer struct {
 type TokenizerI interface {
     ProcessFiles() (InvertedIndex , error)
 }
-
-
-
-// Precompiled regex for efficiency
-var (
-	punctuationRegex = regexp.MustCompile(`[^\w\s]`) // Removes punctuation and special characters
-	numberRegex      = regexp.MustCompile(`\d+`)    // Removes numbers
-)
 
 
 
@@ -95,13 +86,9 @@ func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- Inverted
 
         for _, word := range words {
             wordCount++
-            word = strings.ToLower(strings.TrimSpace(word))
-
-	        // Remove punctuation and special characters
-	        word = punctuationRegex.ReplaceAllString(word, "")
-
-            // Remove numbers
-	        word = numberRegex.ReplaceAllString(word, "")
+  
+            // normalize words
+            word = utils.Normalize(word)
 
             // remove stop words
 		    if _, isStopWord := stopWords[word]; isStopWord {
