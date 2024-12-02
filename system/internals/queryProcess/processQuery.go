@@ -1,6 +1,7 @@
 package queryprocess
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/BigBr41n/scientific-IR/internals/preprocess"
@@ -61,6 +62,7 @@ func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )
 	// extract words 
 	words := strings.Fields(query)
 
+	
 	// remove stop words 
 	for _, word := range words {
 		
@@ -108,11 +110,15 @@ func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )
 	queryResult := make([]float64, 0)
 	isMatched := false
 
-	for key := range TDM.Matrix {
+	// sort for cosine similarity
+	sort.Strings(TDM.Terms)
+	sort.Strings(TDM.Documents)
+
+	for _ , term  := range TDM.Terms {
 		// matched or not
 		isMatched = false
 		for word , data := range qIDF {
-			if word == key {
+			if word == term {
 				queryResult = append(queryResult , data.TFIDF)
 				isMatched = true
 				break 
