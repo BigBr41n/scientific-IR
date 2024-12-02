@@ -2,21 +2,16 @@ package preprocess
 
 import (
 	"log"
-)
 
-// TDM with TF-IDF weights
-type TDM struct {
-	Matrix      map[string]map[string]float64 // Term -> Document -> TF-IDF Weight
-	Terms       []string                      // List of all terms
-	Documents   []string                      // List of all documents
-	DocWordCount map[string]int               // Total word count for each document
-}
+	"github.com/BigBr41n/scientific-IR/internals/types"
+	"github.com/BigBr41n/scientific-IR/internals/weighting"
+)
 
 // using preprocessed inverted index is much faster than
 // reprocess files and extract the number of occurrence for each word
 // BuildTDM constructs a Term-Document Matrix (frequency-based) from the InvertedIndex
-func BuildTDM(index InvertedIndex) *TDM {
-	tdm := &TDM{
+func BuildTDM(index InvertedIndex) * types.TDM {
+	tdm := &types.TDM{
 		Matrix:      make(map[string]map[string]float64),
 		Terms:       []string{},
 		Documents:   []string{},
@@ -65,12 +60,16 @@ func BuildTDM(index InvertedIndex) *TDM {
 		tdm.Documents = append(tdm.Documents, doc)
 	}
 
+
+	// call TF IDF calculator
+	weighting.CalculateTFIDF(tdm)
+
 	return tdm
 }
 
 
 // PrintTDM displays the Term-Document Matrix with TF-IDF weights
-func (tdm *TDM) PrintTDM() {
+func PrintTDM(tdm * types.TDM) {
 	log.Printf("%-15s", "Term/Document")
 	for _, doc := range tdm.Documents {
 		log.Printf("%-15s", doc)
