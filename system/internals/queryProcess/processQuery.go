@@ -24,20 +24,20 @@ type TermTFIDF struct {
 
 
 // exact matching
-func Classic(query string) ([]string , error){
+func Classic(query string, stopWords * map[string]struct{}) ([]string , error){
 	var results []string
 
 	// Load stop words
-	stopWords, err := utils.LoadStopWords()
-    if err != nil {
-        return nil, err
-    }
+	// stopWords, err := utils.LoadStopWords()
+    // if err != nil {
+    //     return nil, err
+    // }
 	// extract words 
     words := strings.Fields(query)
 	// remove stop words 
 	for _, word := range words {
 		word = strings.ToLower(strings.TrimSpace(strings.Trim(word, ".,!?\"'")))
-        if _, exists := stopWords[word]; exists {
+        if _, exists := (*stopWords)[word]; exists {
             continue
         }
 		// stem 
@@ -50,13 +50,13 @@ func Classic(query string) ([]string , error){
 
 
 
-func QueryWeight(query string, TDM * types.TDM)([]float64 , error){
+func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )([]float64 , error){
 	qIDF := make(map[string]Weighting)
 	// Load stop words
-	stopWords, err := utils.LoadStopWords()
-    if err!= nil {
-        return nil, err
-    }
+	// stopWords, err := utils.LoadStopWords()
+    // if err!= nil {
+    //     return nil, err
+    // }
 
 	// extract words 
 	words := strings.Fields(query)
@@ -66,7 +66,7 @@ func QueryWeight(query string, TDM * types.TDM)([]float64 , error){
 		
 		word = utils.Normalize(word)
 
-		if _, exists := stopWords[word]; exists {
+		if _, exists := (*stopWords)[word]; exists {
 			continue
 		}
 		if _ , exists := qIDF[word]; exists {
