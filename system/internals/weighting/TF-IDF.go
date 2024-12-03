@@ -18,12 +18,11 @@ func CalculateTFIDF(tdm * types.TDM) {
 	for term, docFreqMap := range tdm.Matrix {
 		// Calculate IDF
 		docCountWithTerm := len(docFreqMap)
-		idf := math.Log(float64(totalDocs) / float64(docCountWithTerm)+1)
+		idf := math.Log(1 + (float64(totalDocs) / float64(docCountWithTerm)))
 
 		// Update TF-IDF weights
 		for doc, termFrequency := range docFreqMap {
-			tf := termFrequency / float64(tdm.DocWordCount[doc]) 
-			tdm.Matrix[term][doc] = tf * idf
+			tdm.Matrix[term][doc] = (1 + math.Log(termFrequency)) * idf
 		}
 	}
 }
@@ -41,7 +40,7 @@ func CalculateQueryIDF(word string, tdm *types.TDM) float64 {
 
 	docCountWithTerm := len(docFreqMap)
 
-	// calculate IDF using the formula: log(totalDocs / (docCountWithTerm))
-	idf := math.Log(float64(totalDocs) / float64(docCountWithTerm)+1)
+	// calculate IDF using the formula: log(1 + (totalDocs / (docCountWithTerm)))
+	idf := math.Log(1+ (float64(totalDocs) / float64(docCountWithTerm)))
 	return idf
 }
