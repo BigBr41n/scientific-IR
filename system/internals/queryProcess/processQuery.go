@@ -1,6 +1,7 @@
 package queryprocess
 
 import (
+	"math"
 	"sort"
 	"strings"
 
@@ -62,15 +63,16 @@ func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )
 	// extract words 
 	words := strings.Fields(query)
 
-	
 	// remove stop words 
 	for _, word := range words {
-		
-		word = utils.Normalize(word)
 
+		word = utils.Normalize(word)
 		if _, exists := (*stopWords)[word]; exists {
 			continue
 		}
+
+		// stem 
+		word = preprocess.StemWords(word)
 		if _ , exists := qIDF[word]; exists {
 			qIDF[word] = Weighting{
 				Tf: qIDF[word].Tf + 1,
@@ -79,9 +81,6 @@ func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )
 			}
 			continue
 		}
-
-		// stem 
-		word = preprocess.StemWords(word)
 
 		IDF := weighting.CalculateQueryIDF(word, TDM)
 		if IDF == 0.0 {
@@ -97,13 +96,11 @@ func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )
 	}
 
 
-	queryLenght := len(qIDF)
-
 	for word := range qIDF {
 		qIDF[word] = Weighting{
 			Tf: qIDF[word].Tf,
             Idf: qIDF[word].Idf,
-			TFIDF: qIDF[word].Idf * (float64(qIDF[word].Tf) / float64(queryLenght)),
+			TFIDF: qIDF[word].Idf * (1 + math.Log(float64(qIDF[word].Tf))),
 		}
 	}
 
