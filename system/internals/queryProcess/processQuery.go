@@ -9,6 +9,7 @@ import (
 	"github.com/BigBr41n/scientific-IR/internals/types"
 	"github.com/BigBr41n/scientific-IR/internals/utils"
 	"github.com/BigBr41n/scientific-IR/internals/weighting"
+	"gonum.org/v1/gonum/mat"
 )
 
 
@@ -128,6 +129,40 @@ func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )
 
 	return queryResult, nil
 }
+
+
+
+// LSI 
+func TransformQueryAlt(query []float64, U *mat.Dense, Sigma *mat.Dense, k int) *mat.Dense {
+	// Step 1: Extract U[t,k]
+	rows, _ := U.Dims()
+	reducedU := mat.NewDense(rows, k, nil)
+	reducedU.Copy(U.Slice(0, rows, 0, k))
+
+	// Step 2: Extract Σ[k,k] and compute Σ[k,k]⁻¹
+	sigmaInv := mat.NewDense(k, k, nil)
+	for i := 0; i < k; i++ {
+		value := Sigma.At(i, i)
+		if value != 0 {
+			sigmaInv.Set(i, i, 1/value) // Take reciprocal
+		} else {
+			panic("Singular value is zero, cannot compute inverse")
+		}
+	}
+
+	// Step 3: Multiply Qold * U[t,k]
+	queryVec := mat.NewDense(1, len(query), query) // Query as row vector
+	intermediate := mat.NewDense(1, k, nil)
+	intermediate.Mul(queryVec, reducedU)
+
+	// Step 4: Multiply the result by Σ⁻¹
+	finalQuery := mat.NewDense(1, k, nil)
+	finalQuery.Mul(intermediate, sigmaInv)
+
+	return finalQuery
+}
+
+
 
 
 
