@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/BigBr41n/scientific-IR/internals/preprocess"
@@ -153,7 +152,7 @@ func (data * Data) LSI(query string) ([]string, error) {
     documents := make([]string ,0)
 
 
-    log.Println("the length of result : ",len(result)) // should be equal the number of docs
+    //log.Println("the length of result : ",len(result)) // should be equal the number of docs
 
     for idx , cos := range result {
         if cos > 0 {
