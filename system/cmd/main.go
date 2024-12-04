@@ -52,9 +52,6 @@ func main() {
 	invertedIndex , _ := tokenizer.ProcessFiles()
 
 	//printInvertedIndex(invertedIndex)
-
-
-
     // create term document matrix 
     TDM:= preprocess.BuildTDM(invertedIndex)
     //log.Println("Term Document Matrix:")
@@ -88,4 +85,15 @@ func main() {
 	result , _ = models.VSM(query)
 
 	fmt.Printf("the result with VSM : %v\n", result)
+
+
+
+	fmt.Print("Enter a query: ")
+	if scanner.Scan() {
+		query = scanner.Text()
+	}
+
+	result , _ = models.LSI(query)
+
+	fmt.Printf("the result with LSI : %v\n", result)
 }
