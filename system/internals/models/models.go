@@ -78,7 +78,7 @@ func (data * Data) ClassicBoolean(query []string) ([]string, error) {
 
 
 func (data * Data) VSM(query []string)([]string, error) {
-    processed , err := queryprocess.QueryWeight(query, data.TDM_MATRIX, data.StopWords)
+    processed , err := queryprocess.QueryWeight(query, data.TDM_MATRIX)
 	if err != nil {
 		return nil , err
 	}
@@ -117,7 +117,7 @@ func (data * Data) VSM(query []string)([]string, error) {
 
 
 func (data * Data) LSI(query []string) ([]string, error) {
-    processed , err := queryprocess.QueryWeight(query, data.TDM_MATRIX, data.StopWords)
+    processed , err := queryprocess.QueryWeight(query, data.TDM_MATRIX)
 	if err != nil {
 		return nil , err
 	}

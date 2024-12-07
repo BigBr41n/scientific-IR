@@ -53,7 +53,7 @@ func ProcessQuery(query string, stopWords * map[string]struct{}) ([]string , err
 
 
 
-func QueryWeight(query []string, TDM * types.TDM,stopWords * map[string]struct{} )([]float64 , error){
+func QueryWeight(query []string, TDM * types.TDM)([]float64 , error){
 	qIDF := make(map[string]Weighting)
 	// Load stop words
 	// stopWords, err := utils.LoadStopWords()
