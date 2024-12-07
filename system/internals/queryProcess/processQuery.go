@@ -39,7 +39,7 @@ func Classic(query string, stopWords * map[string]struct{}) ([]string , error){
     words := strings.Fields(query)
 	// remove stop words 
 	for _, word := range words {
-		word = strings.ToLower(strings.TrimSpace(strings.Trim(word, ".,!?\"'")))
+		word = utils.Normalize(word)
         if _, exists := (*stopWords)[word]; exists {
             continue
         }
