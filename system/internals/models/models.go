@@ -181,12 +181,7 @@ func (data * Data) BM25(query []string , k int , b float64) ([]string , error) {
         documentScore := 0.0
 
         for _, term := range query {
-            if _, exists := data.TDM_MATRIX.Matrix[term]; !exists {
-                continue
-            }
-
             posting := (*data.InvertedIndex)[term]
-
             tf := 0.0
             for posting != nil && posting.DocID != document {
                 posting = posting.Next
