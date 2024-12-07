@@ -20,10 +20,10 @@ type Data struct {
 
 
 type IrModels interface {
-	ClassicBoolean(query string) ([]string, error)
-	VSM(query string) ([]string , error)
-	LSI(query string) ([]string , error)
-    BM25(query string, k int , b float64) (map[string]float64 , error)
+	ClassicBoolean(query []string) ([]string, error)
+	VSM(query []string) ([]string , error)
+	LSI(query []string) ([]string , error)
+    BM25(query []string, k int , b float64) (map[string]float64 , error)
 }
 
 
@@ -37,17 +37,12 @@ func NewInfoRetrievalModel(TDM_MATRIX * types.TDM, StopWords  *  map[string]stru
 }
 
 
-func (data * Data) ClassicBoolean(query string) ([]string, error) {
-	processed , err := queryprocess.Classic(query, data.StopWords)
-	if err != nil {
-		return nil , err
-	}
-
+func (data * Data) ClassicBoolean(query []string) ([]string, error) {
     // store the set of matching DocIDs for each term.
     var intersectedDocIDs map[string]struct{}
     isFirstTerm := true // handle the first term differently.
 
-	for _, word := range processed {
+	for _, word := range query {
         posting := (*data.InvertedIndex)[word]
 
 		currentDocIDs := make(map[string]struct{})
@@ -79,7 +74,9 @@ func (data * Data) ClassicBoolean(query string) ([]string, error) {
     return result, nil
 }
 
-func (data * Data) VSM(query string)([]string, error) {
+
+
+func (data * Data) VSM(query []string)([]string, error) {
     processed , err := queryprocess.QueryWeight(query, data.TDM_MATRIX, data.StopWords)
 	if err != nil {
 		return nil , err
@@ -118,7 +115,7 @@ func (data * Data) VSM(query string)([]string, error) {
 
 
 
-func (data * Data) LSI(query string) ([]string, error) {
+func (data * Data) LSI(query []string) ([]string, error) {
     processed , err := queryprocess.QueryWeight(query, data.TDM_MATRIX, data.StopWords)
 	if err != nil {
 		return nil , err
@@ -168,13 +165,7 @@ func (data * Data) LSI(query string) ([]string, error) {
 
 
 // BM25 model 
-func (data * Data) BM25(query string , k int , b float64) (map[string]float64 , error) {
-
-    processed, err := queryprocess.Classic(query, data.StopWords)
-    if err != nil {
-        return nil, err
-    }
-
+func (data * Data) BM25(query []string , k int , b float64) (map[string]float64 , error) {
     //sort data
     sort.Strings(data.TDM_MATRIX.Terms)
     sort.Strings(data.TDM_MATRIX.Documents)
@@ -188,7 +179,7 @@ func (data * Data) BM25(query string , k int , b float64) (map[string]float64 , 
         documentLen := float64(data.TDM_MATRIX.DocWordCount[document])
         documentScore := 0.0
 
-        for _, term := range processed {
+        for _, term := range query {
             if _, exists := data.TDM_MATRIX.Matrix[term]; !exists {
                 continue
             }
