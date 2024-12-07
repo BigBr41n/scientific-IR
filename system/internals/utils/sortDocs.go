@@ -3,7 +3,7 @@ package utils
 import "sort"
 
 
-func SortResultsBySimilarity(results map[string]float64) []string {
+func SortResults(results map[string]float64) []string {
     type docSimilarity struct {
         DocID    string
         Similarity float64

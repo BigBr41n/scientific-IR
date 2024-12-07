@@ -23,7 +23,7 @@ type IrModels interface {
 	ClassicBoolean(query []string) ([]string, error)
 	VSM(query []string) ([]string , error)
 	LSI(query []string) ([]string , error)
-    BM25(query []string, k int , b float64) (map[string]float64 , error)
+    BM25(query []string, k int , b float64) ([]string , error)
 }
 
 
@@ -38,6 +38,7 @@ func NewInfoRetrievalModel(TDM_MATRIX * types.TDM, StopWords  *  map[string]stru
 
 
 func (data * Data) ClassicBoolean(query []string) ([]string, error) {
+
     // store the set of matching DocIDs for each term.
     var intersectedDocIDs map[string]struct{}
     isFirstTerm := true // handle the first term differently.
@@ -108,7 +109,7 @@ func (data * Data) VSM(query []string)([]string, error) {
         }
         
     }
-    finalResult := utils.SortResultsBySimilarity(results)
+    finalResult := utils.SortResults(results)
 
     return finalResult, nil
 }
@@ -165,7 +166,7 @@ func (data * Data) LSI(query []string) ([]string, error) {
 
 
 // BM25 model 
-func (data * Data) BM25(query []string , k int , b float64) (map[string]float64 , error) {
+func (data * Data) BM25(query []string , k int , b float64) ([]string , error) {
     //sort data
     sort.Strings(data.TDM_MATRIX.Terms)
     sort.Strings(data.TDM_MATRIX.Documents)
@@ -206,5 +207,7 @@ func (data * Data) BM25(query []string , k int , b float64) (map[string]float64 
         results[document] = documentScore
     }
 
-    return results , nil 
+    sortedDocs := utils.SortResults(results)
+    return sortedDocs, nil
+    // return results , nil 
 }
