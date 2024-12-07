@@ -27,7 +27,7 @@ type TermTFIDF struct {
 
 
 // exact matching
-func Classic(query string, stopWords * map[string]struct{}) ([]string , error){
+func ProcessQuery(query string, stopWords * map[string]struct{}) ([]string , error){
 	var results []string
 
 	// Load stop words
@@ -53,7 +53,7 @@ func Classic(query string, stopWords * map[string]struct{}) ([]string , error){
 
 
 
-func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )([]float64 , error){
+func QueryWeight(query []string, TDM * types.TDM,stopWords * map[string]struct{} )([]float64 , error){
 	qIDF := make(map[string]Weighting)
 	// Load stop words
 	// stopWords, err := utils.LoadStopWords()
@@ -61,19 +61,9 @@ func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )
     //     return nil, err
     // }
 
-	// extract words 
-	words := strings.Fields(query)
-
 	// remove stop words 
-	for _, word := range words {
+	for _, word := range query {
 
-		word = utils.Normalize(word)
-		if _, exists := (*stopWords)[word]; exists {
-			continue
-		}
-
-		// stem 
-		word = preprocess.StemWords(word)
 		if _ , exists := qIDF[word]; exists {
 			qIDF[word] = Weighting{
 				Tf: qIDF[word].Tf + 1,
@@ -95,7 +85,6 @@ func QueryWeight(query string, TDM * types.TDM,stopWords * map[string]struct{} )
 			TFIDF: 0.0,
 		}
 	}
-
 
 	for word := range qIDF {
 		qIDF[word] = Weighting{
