@@ -154,6 +154,11 @@ func (data * Data) LSI(query []string) ([]string, error) {
 
     //log.Println("the length of result : ",len(result)) // should be equal the number of docs
 
+    // sort the result 
+    sort.Slice(result, func(i, j int) bool {
+        return result[i] > result[j]
+    })
+
     for idx , cos := range result {
         if cos > 0 {
             documents = append(documents , data.TDM_MATRIX.Documents[idx])
