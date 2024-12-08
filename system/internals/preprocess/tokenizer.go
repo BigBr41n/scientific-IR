@@ -96,7 +96,7 @@ func tokenize(entry fs.DirEntry, wg * sync.WaitGroup, indexChan chan <- Inverted
 		    }
 
             // stem each word 
-            word := StemWords(word)
+            word := LemmatizeStemWords(word , 0)
 
             // position node of the current word
             newPosNode := &PositionNode{
